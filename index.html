@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESQ-MESH AI</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef4fa;
+            color: #172b4d;
+        }
+
+        header {
+            background: #12345a;
+            color: white;
+            padding: 22px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px #00000012;
+        }
+
+        h2 {
+            color: #12345a;
+        }
+
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #status {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #52647a;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>RESQ-MESH AI</h1>
+        <p>Emergency Communication & Rescue Coordination</p>
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+            <h2>Emergency SOS</h2>
+            <p>
+                Request help during floods, earthquakes
+                and other disasters.
+            </p>
+
+<label for="emergencyType">Emergency Type:</label>
+<br><br>
+
+<select id="emergencyType" style="padding:10px; width:100%; margin-bottom:15px;">
+    <option value="Flood">Flood</option>
+    <option value="Earthquake">Earthquake</option>
+    <option value="Landslide">Landslide</option>
+    <option value="Other">Other Emergency</option>
+</select>
+
+<br>
+
+<label for="urgency">Urgency Level:</label>
+<br><br>
+
+<select id="urgency" style="padding:10px; width:100%; margin-bottom:15px;">
+    <option value="High">High - Immediate danger</option>
+    <option value="Medium">Medium - Need help soon</option>
+    <option value="Low">Low - Non-urgent</option>
+</select>
+
+<br>
+
+
+            <button onclick="sendSOS()">SEND SOS</button>
+
+            <p id="status">System ready for demo.</p>
+        </div>
+
+        
+<div class="card">
+    <h2>Rescue Coordination</h2>
+
+    <p id="location">Victim Location: Not shared</p>
+
+    <button onclick="getLocation()" style="background:#12345a;">
+        Detect My Location
+    </button>
+
+    <p id="team">Rescue Team: Awaiting connection</p>
+
+    <p id="distance">Distance: Not calculated</p>
+
+    <p id="eta">Estimated Time: Not calculated</p>
+
+    <p>Network Status: Demo mode</p>
+
+    <button onclick="calculateETA()" style="background:#15803d;">
+        Calculate Rescue ETA (Demo)
+    </button>
+</div>
+
+    </div>
+
+    <footer>
+        RESQ-MESH AI | Student Project Prototype
+    </footer>
+
+    <script>
+let victimLat = null;
+let victimLon = null;
+        
+
+function sendSOS() {
+  const sosId = "SOS-" + Date.now();
+  const currentTime = new Date().toLocaleString();
+
+  const emergencyType =
+    document.getElementById("emergencyType").value;
+
+  const urgency =
+    document.getElementById("urgency").value;
+
+  let locationText = "Location not detected";
+
+  if (victimLat !== null && victimLon !== null) {
+    locationText =
+      "Latitude: " + victimLat +
+      ", Longitude: " + victimLon;
+  }
+
+  const report = {
+    id: sosId,
+    time: currentTime,
+    emergency: emergencyType,
+    urgency: urgency,
+    location: locationText,
+    status: "Pending"
+  };
+
+  const reports = JSON.parse(
+    localStorage.getItem("resqMeshReports") || "[]"
+  );
+
+  reports.unshift(report);
+
+  localStorage.setItem(
+    "resqMeshReports",
+    JSON.stringify(reports)
+  );
+
+  document.getElementById("status").textContent =
+    "SOS Created! ID: " + sosId +
+    " | Emergency: " + emergencyType +
+    " | Urgency: " + urgency;
+
+  displayReports();
+}
+
+function displayReports() {
+  const reports = JSON.parse(
+    localStorage.getItem("resqMeshReports") || "[]"
+  ).sort(function (a, b) {
+    const priority = { High: 1, Medium: 2, Low: 3 };
+
+    return (priority[a.urgency] || 4) -
+           (priority[b.urgency] || 4);
+  }
+  );
+
+  const sosList = document.getElementById("sosList");
+  sosList.replaceChildren();
+
+  document.getElementById("dashboardStatus").textContent =
+    reports.length === 0
+      ? "No SOS reports received yet."
+      : "Total SOS reports: " + reports.length;
+reports.forEach(function (item) {
+     const card = document.createElement("div");
+    card.className = "card";
+
+    const details = document.createElement("p");
+    details.textContent =
+      "SOS ID: " + item.id +
+      " | Time: " + item.time +
+      " | Emergency: " + item.emergency +
+      " | Urgency: " + item.urgency +
+      " | " + item.location;
+
+    const reportStatus = document.createElement("p");
+    reportStatus.textContent = "Status: " + item.status;
+const priority = document.createElement("p");
+priority.textContent = "Priority: " + item.urgency;
+
+if (item.urgency === "High") {
+    priority.style.color = "#dc2626";
+} else if (item.urgency === "Medium") {
+    priority.style.color = "#d97706";
+} else {
+    priority.style.color = "#15803d";
+}
+
+priority.style.fontWeight = "bold";
+card.appendChild(priority);
+    card.appendChild(details);
+    card.appendChild(reportStatus);
+
+    if (item.status === "Pending") {
+      const acceptButton = document.createElement("button");
+      acceptButton.textContent = "Accept SOS";
+
+      acceptButton.onclick = function () {
+        updateReportStatus(item.id, "Accepted by Rescue Team");
+      };
+
+      card.appendChild(acceptButton);
+    }
+
+    if (item.status === "Accepted by Rescue Team") {
+      const resolveButton = document.createElement("button");
+      resolveButton.textContent = "Mark as Resolved";
+      resolveButton.style.background = "#15803d";
+
+      resolveButton.onclick = function () {
+        updateReportStatus(item.id, "Resolved");
+      };
+
+      card.appendChild(resolveButton);
+    }
+
+    sosList.appendChild(card);
+  });
+}
+
+function updateReportStatus(id, newStatus) {
+  const reports = JSON.parse(
+    localStorage.getItem("resqMeshReports") || "[]"
+  );
+
+  const report = reports.find(function (item) {
+    return item.id === id;
+  });
+
+  if (report) {
+    report.status = newStatus;
+
+    localStorage.setItem(
+      "resqMeshReports",
+      JSON.stringify(reports)
+    );
+
+    displayReports();
+  }
+}
+
+  function getLocation() {
+    const output = document.getElementById("location");
+
+    if (!navigator.geolocation) {
+        output.textContent = "Location is not supported.";
+        return;
+    }
+
+    output.textContent = "Detecting location...";
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            victimLat = position.coords.latitude;
+            victimLon = position.coords.longitude;
+
+            output.textContent =
+                "Latitude: " + victimLat +
+                " | Longitude: " + victimLon;
+        },
+        function(error) {
+            output.textContent =
+                "Location unavailable. Please allow location access.";
+        }
+    );
+}
+
+function calculateETA() {
+    // Example rescue team coordinates for demo only
+    if (victimLat === null || victimLon === null) {
+    alert("Please detect your location first!");
+    return;
+}
+    const teamLat = 26.420000;
+    const teamLon = 80.330000;
+
+    const toRad = degrees => degrees * Math.PI / 180;
+
+    const dLat = toRad(teamLat - victimLat);
+    const dLon = toRad(teamLon - victimLon);
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(victimLat)) *
+        Math.cos(toRad(teamLat)) *
+        Math.sin(dLon / 2) ** 2;
+
+    const distanceKm =
+        6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const etaMinutes = Math.round(distanceKm / 30 * 60);
+
+    document.getElementById("team").textContent =
+        "Rescue Team: Demo team";
+
+    document.getElementById("distance").textContent =
+        "Straight-line distance: " + distanceKm.toFixed(2) + " km";
+
+    document.getElementById("eta").textContent =
+        "Estimated Time (Demo): " + etaMinutes + " minutes";
+}
+
+    </script>
+
+<hr>
+
+<h2>Rescue Team Dashboard</h2>
+
+<div class="card">
+  <h3>Incoming SOS Reports</h3>
+  <p id="dashboardStatus">No SOS reports received yet.</p>
+  <div id="sosList"></div>
+</div>
+
+<script>
+    displayReports();
+</script>
+</body>
+</html>
