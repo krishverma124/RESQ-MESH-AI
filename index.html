@@ -6,61 +6,216 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RESQ-MESH AI</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #eef4fa;
-            color: #172b4d;
-        }
+<style>
+    :root {
+        --navy: #10233f;
+        --blue: #1d4ed8;
+        --red: #dc2626;
+        --green: #15803d;
+        --bg: #f3f6fb;
+        --text: #18263d;
+        --muted: #64748b;
+        --border: #e2e8f0;
+    }
 
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+    }
+
+    header {
+        background: linear-gradient(135deg, #10233f, #1e497b);
+        color: white;
+        padding: 38px 20px;
+        text-align: center;
+        border-bottom: 4px solid #ef4444;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: clamp(28px, 5vw, 42px);
+        letter-spacing: 1px;
+        font-weight: 800;
+    }
+
+    header p {
+        margin: 8px 0 0;
+        color: #dbeafe;
+        font-size: 15px;
+    }
+
+    .container {
+        max-width: 1050px;
+        margin: 30px auto;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+        align-items: start;
+    }
+
+    .card {
+        background: white;
+        padding: 26px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 24px rgba(15, 35, 65, 0.06);
+        min-width: 0;
+    }
+
+    .container > .card {
+        margin-bottom: 0;
+    }
+
+    h2 {
+        color: var(--navy);
+        font-size: 22px;
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+
+    h3 {
+        color: var(--navy);
+    }
+
+    p {
+        overflow-wrap: anywhere;
+    }
+
+    label {
+        display: inline-block;
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    select {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: #fff;
+        color: var(--text);
+        font-size: 14px;
+        margin: 8px 0 18px !important;
+    }
+
+    select:focus {
+        outline: 2px solid #93c5fd;
+        border-color: var(--blue);
+    }
+
+    button {
+        background: var(--red);
+        color: white;
+        border: none;
+        padding: 13px 19px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s, opacity 0.15s;
+        margin: 5px 5px 5px 0;
+    }
+
+    button:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+
+    button:focus-visible {
+        outline: 3px solid #93c5fd;
+        outline-offset: 3px;
+    }
+
+    #status {
+        font-weight: 600;
+        margin-top: 16px;
+        overflow-wrap: anywhere;
+    }
+
+    #location,
+    #team,
+    #distance,
+    #eta {
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    body > h2 {
+        max-width: 1050px;
+        margin: 35px auto 16px;
+        padding: 0 20px;
+    }
+
+    body > .card {
+        max-width: 1010px;
+        margin: 0 auto 30px;
+    }
+
+    #sosList > .card {
+        margin-top: 14px;
+        border-left: 4px solid var(--blue);
+        box-shadow: 0 4px 14px rgba(15, 35, 65, 0.05);
+    }
+
+    #sosList > .card p {
+        font-size: 14px;
+    }
+
+    footer {
+        text-align: center;
+        padding: 24px 16px;
+        color: var(--muted);
+        font-size: 13px;
+        border-top: 1px solid var(--border);
+        margin-top: 35px;
+    }
+
+    @media (max-width: 700px) {
         header {
-            background: #12345a;
-            color: white;
-            padding: 22px;
-            text-align: center;
+            padding: 28px 16px;
         }
 
         .container {
-            max-width: 650px;
-            margin: 30px auto;
-            padding: 20px;
+            grid-template-columns: 1fr;
+            margin: 20px auto;
+            padding: 0 14px;
+            gap: 18px;
         }
 
         .card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 3px 12px #00000012;
+            padding: 20px;
         }
 
-        h2 {
-            color: #12345a;
+        body > .card {
+            margin-left: 14px;
+            margin-right: 14px;
+        }
+
+        body > h2 {
+            margin-top: 28px;
         }
 
         button {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 7px;
-            font-size: 16px;
-            cursor: pointer;
+            max-width: 100%;
         }
+    }
+</style>
 
-        #status {
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #52647a;
-        }
-    </style>
-</head>
+    </head>
 
 <body>
 
@@ -346,15 +501,18 @@ function calculateETA() {
 
     </script>
 
-<hr>
 
 <h2>Rescue Team Dashboard</h2>
 
 <div class="card">
-  <h3>Incoming SOS Reports</h3>
-  <p id="dashboardStatus">No SOS reports received yet.</p>
-  <div id="sosList"></div>
+    <h3>Incoming SOS Reports</h3>
+    <p id="dashboardStatus">No SOS reports received yet.</p>
+    <div id="sosList"></div>
 </div>
+
+<footer>
+    RESQ-MESH AI | Student Project Prototype
+</footer>
 
 <script>
     displayReports();
