@@ -296,7 +296,7 @@ let victimLat = null;
 let victimLon = null;
         
 
-function sendSOS() {
+async function sendSOS() {
   const sosId = "SOS-" + Date.now();
   const currentTime = new Date().toLocaleString();
 
@@ -306,12 +306,14 @@ function sendSOS() {
   const urgency =
     document.getElementById("urgency").value;
 
+  const lat = victimLat;
+  const lon = victimLon;
+
   let locationText = "Location not detected";
 
-  if (victimLat !== null && victimLon !== null) {
+  if (lat !== null && lon !== null) {
     locationText =
-      "Latitude: " + victimLat +
-      ", Longitude: " + victimLon;
+      "Latitude: " + lat + ", Longitude: " + lon;
   }
 
   const report = {
@@ -335,12 +337,38 @@ function sendSOS() {
   );
 
   document.getElementById("status").textContent =
-    "SOS Created! ID: " + sosId +
-    " | Emergency: " + emergencyType +
-    " | Urgency: " + urgency;
+    "Saving SOS to database...";
+
+  try {
+    const { error } = await supabaseClient
+      .from("sos_reports")
+      .insert({
+        emergency_type: emergencyType,
+        urgency: urgency,
+        status: "Pending",
+        latitude: lat,
+        longitude: lon
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    document.getElementById("status").textContent =
+      "SOS saved to database! ID: " + sosId +
+      " | Emergency: " + emergencyType +
+      " | Urgency: " + urgency;
+
+  } catch (error) {
+    console.error("Supabase error:", error);
+
+    document.getElementById("status").textContent =
+      "SOS saved on this device only. Database save failed.";
+  }
 
   displayReports();
 }
+
 
 function displayReports() {
   const reports = JSON.parse(
@@ -516,6 +544,15 @@ function calculateETA() {
 
 <script>
     displayReports();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://atwkieutwzkzbgrjmbnn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_moulJ3I98ABg2X2UgRglQA_q_-AztxS";
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 </script>
 </body>
 </html>
