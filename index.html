@@ -371,80 +371,64 @@ async function sendSOS() {
 
 
 function displayReports() {
-  const reports = JSON.parse(
-    localStorage.getItem("resqMeshReports") || "[]"
-  ).sort(function (a, b) {
-    const priority = { High: 1, Medium: 2, Low: 3 };
+  setTimeout(async function () {
+    const sosList = document.getElementById("sosList");
+    const dashboardStatus = document.getElementById("dashboardStatus");
 
-    return (priority[a.urgency] || 4) -
-           (priority[b.urgency] || 4);
-  }
-  );
+    try {
+      const { data, error } = await supabaseClient
+        .from("sos_reports_public")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  const sosList = document.getElementById("sosList");
-  sosList.replaceChildren();
+      if (error) throw error;
 
-  document.getElementById("dashboardStatus").textContent =
-    reports.length === 0
-      ? "No SOS reports received yet."
-      : "Total SOS reports: " + reports.length;
-reports.forEach(function (item) {
-     const card = document.createElement("div");
-    card.className = "card";
+      sosList.replaceChildren();
 
-    const details = document.createElement("p");
-    details.textContent =
-      "SOS ID: " + item.id +
-      " | Time: " + item.time +
-      " | Emergency: " + item.emergency +
-      " | Urgency: " + item.urgency +
-      " | " + item.location;
+      dashboardStatus.textContent =
+        "Total SOS reports: " + data.length;
 
-    const reportStatus = document.createElement("p");
-    reportStatus.textContent = "Status: " + item.status;
-const priority = document.createElement("p");
-priority.textContent = "Priority: " + item.urgency;
+      data.forEach(function (item) {
+        const card = document.createElement("div");
+        card.className = "card";
 
-if (item.urgency === "High") {
-    priority.style.color = "#dc2626";
-} else if (item.urgency === "Medium") {
-    priority.style.color = "#d97706";
-} else {
-    priority.style.color = "#15803d";
-}
+        const priority = document.createElement("p");
+        priority.textContent = "Priority: " + item.urgency;
+        priority.style.fontWeight = "bold";
 
-priority.style.fontWeight = "bold";
-card.appendChild(priority);
-    card.appendChild(details);
-    card.appendChild(reportStatus);
+        if (item.urgency === "High") {
+          priority.style.color = "#dc2626";
+        } else if (item.urgency === "Medium") {
+          priority.style.color = "#d97706";
+        } else {
+          priority.style.color = "#15803d";
+        }
 
-    if (item.status === "Pending") {
-      const acceptButton = document.createElement("button");
-      acceptButton.textContent = "Accept SOS";
+        const details = document.createElement("p");
+        details.textContent =
+          "SOS ID: " + item.id +
+          " | Time: " + new Date(item.created_at).toLocaleString() +
+          " | Emergency: " + item.emergency_type;
 
-      acceptButton.onclick = function () {
-        updateReportStatus(item.id, "Accepted by Rescue Team");
-      };
+        const status = document.createElement("p");
+        status.textContent = "Status: " + item.status;
 
-      card.appendChild(acceptButton);
+        card.appendChild(priority);
+        card.appendChild(details);
+        card.appendChild(status);
+        sosList.appendChild(card);
+      });
+
+      if (data.length === 0) {
+        dashboardStatus.textContent = "No SOS reports received yet.";
+      }
+    } catch (error) {
+      document.getElementById("dashboardStatus").textContent =
+        "Could not load SOS reports. Please check the database connection.";
+      console.error(error);
     }
-
-    if (item.status === "Accepted by Rescue Team") {
-      const resolveButton = document.createElement("button");
-      resolveButton.textContent = "Mark as Resolved";
-      resolveButton.style.background = "#15803d";
-
-      resolveButton.onclick = function () {
-        updateReportStatus(item.id, "Resolved");
-      };
-
-      card.appendChild(resolveButton);
-    }
-
-    sosList.appendChild(card);
-  });
+  }, 1000);
 }
-
 function updateReportStatus(id, newStatus) {
   const reports = JSON.parse(
     localStorage.getItem("resqMeshReports") || "[]"
@@ -542,9 +526,6 @@ function calculateETA() {
     RESQ-MESH AI | Student Project Prototype
 </footer>
 
-<script>
-    displayReports();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://atwkieutwzkzbgrjmbnn.supabase.co";
@@ -553,6 +534,7 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
+displayReports();
 </script>
 </body>
 </html>
